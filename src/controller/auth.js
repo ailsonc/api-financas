@@ -1,48 +1,34 @@
 const jwt = require("jsonwebtoken")
      ,logger = require("../config/log")
-     , userModel = require("../model/user.model")
+     ,userModel = require("../model/user.model")
+     ,crypt = require("../utils/crypt")
      ,SSO_SECRET = process.env.SSO_SECRET || "s3nh4";
-
-auth = {};
-
-const USERS = [
-    {
-        email: "test@metabase.com",
-        password: "test1",
-    },
-  ];
 
 /**
  * expiresIn: 300 sec is equal to 10 mins
  */
 const signUserToken = user =>
     jwt.sign({
-        email: user.email,
+        user: user,
       }, SSO_SECRET, { expiresIn: '1h' })
 ;  
 
-const getUser = email => USERS.find(user => user.email === email);
-
-const validateUserPassword = (user, password) => user && user.password === password;
-
-auth.authentication = async (req, res) => {
+module.exports.authentication = async (req, res) => {
     try {
-         
+        const user = await userModel.getUser(req.body.email);
 
-        //const user = getUser(req.body.email);
-        
-        if (user && validateUserPassword(user, req.body.password)) {
+        if (user && await crypt.compare(req.body.password, user.password)) {
             return res.status(200).send({ 'x-access-token' : signUserToken(user) });       
         } else {
           res.status(400).send({ messege: "Invalid Authentication"});
         }
-        
+            
     } catch(error) {
         return res.status(400).send(error);
     }
 }
 
-auth.requireAuthentication = function(req, res, next) {
+module.exports.requireAuthentication = function(req, res, next) {
     try {
         var token = req.header('x-access-token'); 
 
@@ -69,5 +55,3 @@ auth.requireAuthentication = function(req, res, next) {
         return res.sendStatus(401);
     }
 }
-
-module.exports = auth;

@@ -1,10 +1,19 @@
 var db = require('../config/db');
 
-module.exports.getAll = async (req, res) => {
+module.exports.getAll = async () => {
     try {
-        const { rows } = await db.query('SELECT * FROM F_USER');
-        res.status(200).send(rows);
+        const { rows } = await db.query('SELECT USERNAME, EMAIL, STATUS FROM F_USER');
+        return rows;
     } catch(error) {
-        return res.status(400).send(error);
+        throw error;
+    }
+}
+
+module.exports.getUser = async (email) => {
+    try {
+        const { rows } = await db.query('SELECT USERNAME, EMAIL, PASSWORD, STATUS FROM F_USER WHERE EMAIL = $1', [email]);
+        return rows[0];
+    } catch(error) {
+        throw error;
     }
 }
