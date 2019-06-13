@@ -1,13 +1,14 @@
-const jwt = require("jsonwebtoken"),
-      logger = require("../config/log"),
-      SSO_SECRET = process.env.SSO_SECRET || "s3nh4";
+const jwt = require("jsonwebtoken")
+     ,logger = require("../config/log")
+     , userModel = require("../model/user.model")
+     ,SSO_SECRET = process.env.SSO_SECRET || "s3nh4";
 
 auth = {};
 
 const USERS = [
     {
-      email: "test@metabase.com",
-      password: "test1",
+        email: "test@metabase.com",
+        password: "test1",
     },
   ];
 
@@ -26,7 +27,9 @@ const validateUserPassword = (user, password) => user && user.password === passw
 
 auth.authentication = async (req, res) => {
     try {
-        const user = getUser(req.body.email);
+         
+
+        //const user = getUser(req.body.email);
         
         if (user && validateUserPassword(user, req.body.password)) {
             return res.status(200).send({ 'x-access-token' : signUserToken(user) });       
